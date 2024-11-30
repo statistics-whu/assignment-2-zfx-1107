@@ -1,0 +1,402 @@
+---
+title: "zengfeixue homework2"
+author: "zengfeixue"
+date: "2024-11-03"
+documentclass: ctexart
+geometry: "left=2.5cm,right=2cm,top=3cm,bottom=2.5cm"
+output: 
+  pdf_document:
+    fig_caption: yes
+    latex_engine: xelatex
+    number_sections: yes
+---
+
+```{r}
+#第一题
+library(readxl) 
+BigBangTheory<- read.csv("C:/Users/pc/Desktop/BigBangTheory.csv")
+#a.Compute the minimum and the maximum number of viewers.
+max_viewer<-max(BigBangTheory$Viewers)
+min_viewer<-min(BigBangTheory$Viewers)
+cat('最大值:', max_viewer, '\n')
+cat('最小值:', min_viewer, '\n')
+
+#b.Compute the mean, median, and mode.
+mean_viewer <- mean(BigBangTheory$Viewers)
+median_viewer <- median(BigBangTheory$Viewers.)
+mode_viewer <- names(which.max(table(BigBangTheory$Viewers)))
+cat('平均值:', mean_viewer, '\n')
+cat('中位数:', median_viewer, '\n')
+cat('众数:', mode_viewer, '\n')
+
+#c.Compute the first and third quartiles.
+q1_viewers <- quantile(BigBangTheory$Viewers, 0.25)
+q3_viewers <- quantile(BigBangTheory$Viewers, 0.75)
+cat('q1:', q1_viewers, '\n')
+cat('q3:', q3_viewers, '\n')
+
+#d. has viewership grown or declined over the 2011–2012 season? Discuss.
+plot(BigBangTheory$Viewers, type = "l")
+df <- BigBangTheory[order(BigBangTheory$Air.Date), ]
+trend <- diff(df$Viewers)
+trend
+plot(trend, type = "l")
+#结论：收视率呈波动状态，12年之后下降趋势较明显。
+
+                              
+```
+```{r}
+#第二题
+nba<- read.csv("C:/Users/pc/Desktop/NBAPlayerPts.csv")
+#a. Show the frequency distribution.
+breaks <- seq(10, 30, by = 2)# 定义分组区间
+grouped <- cut(nba$PPG, breaks = breaks, include.lowest = TRUE)
+freq_table <- table(grouped)# 进行分组并计算频率
+print(freq_table)
+
+#b.Show the relative frequency distribution.
+rel_freq_table <- prop.table(freq_table)
+print(rel_freq_table)
+
+#c. Show the cumulative percent frequency distribution.
+cum_freq_table <- cumsum(freq_table)
+cum_percent_freq_table <- (cum_freq_table / sum(freq_table)) * 100
+print(cum_percent_freq_table)
+
+#d. Develop a histogram for the average number of points scored per game.
+hist(nba$PPG, breaks = 10, xlab = 'average points per game')
+
+#e. Do the data appear to be skewed? Explain.
+mean_ppg <- mean(nba$PPG)
+median_ppg <- median(nba$PPG)
+if (mean_ppg > median_ppg) {
+  skewness <- '右偏'
+} else {
+  skewness <- '左偏'
+}
+cat('这组数据', skewness, '\n')
+
+#f. What percentage of the players averaged at least 20 points per game?
+points_20<-nba$PPG >= 20
+sum_20 <- sum(points_20)
+total_players <- length(nba$PPG)
+percentage <- (sum_20 / total_players) 
+cat( '平均得分至少为20分的球员的比例为',percentage,'\n')
+
+```
+```{r}
+#第三题
+#标准误差=20，总体标准差=500,算样本。
+#a. How large was the sample used in this survey?
+se <- 20
+sigma <- 500
+n <- (sigma / se)^2
+n
+
+#b. What is the probability that the point estimate was within ±25 of the population mean?
+z1 <- 25 / se
+z2 <- -25 / se
+probability <- pnorm(z1) - pnorm(z2)
+probability
+```
+
+```{r}
+#第四题
+pro<- read.csv("C:/Users/pc/Desktop/Professional.csv")
+#a. Develop appropriate descriptive statistics to summarize the data.总结数据
+str(pro)
+summary(pro)
+
+#b.Develop 95% confidence intervals for the mean age and household income of subscribers.订阅者平均年龄和家庭收入的95%置信区间
+age_conf <- t.test(pro$Age, conf.level = 0.95)# 计算平均年龄的95%置信区间
+cat("平均年龄的95%置信区间为：", age_conf$conf.int[1], "至", age_conf$conf.int[2], "\n")
+
+income_conf <- t.test(pro$Household.Income...., conf.level = 0.95)# 计算家庭收入的95%置信区间
+cat("家庭收入的95%置信区间为：", income_conf$conf.int[1], "至", income_conf$conf.int[2], "\n")
+
+# c.Develop 95% confidence intervals for the proportion of subscribers who have broadband access at home and the proportion of subscribers who have children.订阅者中拥有宽带接入和拥有孩子的比例的95%置信区间
+# 计算拥有宽带接入的比例的95%置信区间
+broadband_count <- sum(pro$Broadband.Access.== "Yes")
+total_count <- nrow(pro)
+broadband_conf <- prop.test(broadband_count, total_count, conf.level = 0.95)
+cat("拥有宽带接入的比例的95%置信区间为：", broadband_conf$conf.int[1], "至", broadband_conf$conf.int[2], "\n")
+# 计算拥有孩子的比例的95%置信区间
+children_count <- sum(pro$Have.Children. == "Yes")
+children_conf <- prop.test(children_count, total_count, conf.level = 0.95)
+cat("拥有孩子的比例的95%置信区间为：", children_conf$conf.int[1], "至", children_conf$conf.int[2], "\n")
+
+#d. Would Young Professional be a good advertising outlet for online brokers? Justify your conclusion with statistical data.
+broadband_access_proportion <- mean(pro$Broadband.Access. == "Yes")
+cat("拥有宽带接入的比例为：", broadband_access_proportion, "\n")
+# 为online brokers开发95%置信区间
+ci_broadband <- prop.test(sum(pro$Broadband.Access. == "Yes"), nrow(pro), conf.level = 0.95)
+print(ci_broadband)
+if (ci_broadband$conf.int[1] > 0.5) {
+  cat("是一个好广告，因为大多数订阅者都有宽带接入。\n")
+} else {
+  cat("不是好广告，因为拥有宽带接入的订阅者比例不高。\n")
+}
+
+#e. Would this magazine be a good place to advertise for companies selling educational software and computer games for young children?
+children_proportion <- mean(pro$Have.Children. == "Yes")
+if (children_proportion > 0.5) {
+  cat("适合在这里打广告，因为多数订阅者有孩子。\n")
+} else {
+  cat("不适合打广告，因为拥有孩子的订阅者比例不高。\n")
+}
+
+#f. Comment on the types of articles you believe would be of interest to readers of Young Professional.
+#读者可能对以下内容感兴趣：
+#1.个人理财和投资建议，因为许多读者都有投资。2.科技和互联网相关的最新动态，因为大多数读者都有宽带接入。3.家庭和育儿相关的内容，因为相当一部分读者有孩子。4.房地产购买指南或者房价走向，改善房的房源或者二手房价格情况。
+
+```
+
+```{r}
+#第五题
+quality<- read.csv("C:/Users/pc/Desktop/Quality.csv")
+#总体均值=12，总体标准差= 0.21，n = 30
+#a. Conduct a hypothesis test for each sample at the .01 level of significance and determine what action, if any, should be taken. Provide the p-value for each test.
+mu <- 12
+sigma <- 0.21
+n <- 30
+sample_means <- apply(quality, 2, mean)# 计算每个样本的均值
+z_scores <- (sample_means - mu) / (sigma / sqrt(n))# 计算z检验统计量
+critical_value <- qnorm(0.995)# 确定临界值
+hypothesis_results <- ifelse(abs(z_scores) > critical_value, "Reject H0", "Fail to reject H0")# 执行假设检验
+data.frame(Sample = names(sample_means), Mean = sample_means, Z_Score = z_scores, Decision = hypothesis_results)
+
+#b. compute the standard deviation for each of the four samples. does the assumption of .21 for the population standard deviation appear reasonable?
+sample_sds <- apply(quality, 2, sd)
+sample_sds
+assumed_sigma <- 0.21
+comparison <- data.frame(Sample = names(sample_sds), Sample_SD = sample_sds, Assumed_SD = assumed_sigma)
+comparison
+
+#c. upper and lower control limits
+alpha <- 0.01
+z_alpha <- qnorm(1 - alpha/2)
+upper_limit <- mu + z_alpha * (sigma / sqrt(n))
+lower_limit <- mu - z_alpha * (sigma / sqrt(n))
+data.frame(Lower_Control_Limit = lower_limit, Upper_Control_Limit = upper_limit)
+#只要新样本均值在11.53和12.47之间，过程就被认为是正常运行的。如果样本均值超过12.47或低于11.53，则需要采取纠正措施
+
+#d. discuss the implications of changing the level of significance to a larger value. what mistake or error could increase if the level of significance is increased?
+# 定义两个不同的显著性水平
+alpha_small <- 0.01  # 较小的显著性水平，例如0.01
+alpha_large <- 0.10 # 较大的显著性水平，例如0.10
+# 计算两个显著性水平下的z值
+z_alpha_small <- qnorm(1 - alpha_small/2)
+z_alpha_large <- qnorm(1 - alpha_large/2)
+# 计算两个显著性水平下的控制限
+upper_limit_small <- mu + z_alpha_small * (sigma / sqrt(n))
+lower_limit_small <- mu - z_alpha_small * (sigma / sqrt(n))
+
+upper_limit_large <- mu + z_alpha_large * (sigma / sqrt(n))
+lower_limit_large <- mu - z_alpha_large * (sigma / sqrt(n))
+
+# 打印控制限
+cat("较小显著性水平下的控制限：\n")
+cat("下控制限：", lower_limit_small, "\n")
+cat("上控制限：", upper_limit_small, "\n\n")
+cat("较大显著性水平下的控制限：\n")
+cat("下控制限：", lower_limit_large, "\n")
+cat("上控制限：", upper_limit_large, "\n")
+#结论：增加显著性水平可能会在错误地拒绝零假设，这可能导致不必要的纠正措施，并使控制限变宽，从而降低质量控制的严格性
+
+```
+
+```{r}
+#第六题
+occ<- read.csv("C:/Users/pc/Desktop/Occupancy.csv")
+#a. Estimate the proportion of units rented during the first week of March 2007 and the first week of March 2008.
+library(dplyr)
+library(tidyr)
+rented_2007 <- sum(occ$`2007-03-01 00:00:00` == "Yes")
+rented_2008 <- sum(occ$`2008-03-01 00:00:00` == "Yes")
+total_units <- nrow(occ)
+proportion_2007 <- rented_2007 / total_units
+proportion_2008 <- rented_2008 / total_units
+cat("2007年3月第一周出租单元的比例为：", proportion_2007, "\n")
+cat("2008年3月第一周出租单元的比例为：", proportion_2008, "\n")
+
+```
+
+```{r}
+#b. Provide a 95% confidence interval for the difference in proportions.
+n_2007 <- sum(occ$Rented[occ$Month == "March 2007"])
+n_2008 <- sum(occ$Rented[occ$Month == "March 2008"])
+p_diff <- proportion_2008 - proportion_2007
+se_diff <- sqrt((proportion_2007 * (1 - proportion_2007) / n_2007) + (proportion_2008 * (1 - proportion_2008) / n_2008))
+ci_lower <- p_diff - 1.96 * se_diff
+ci_upper <- p_diff + 1.96 * se_diff
+cat("95%置信区间为：", "(", ci_lower, ", ", ci_upper, ")\n")
+
+```
+
+```{r}
+#c. On the basis of your findings, does it appear March rental rates for 2008 will be upfrom those a year earlier?
+# 2008年出租率很可能上涨。根据b 95%比例置信区间为不包含0，说明两者比例是有差异的，则2008年3月出租率大于2007年
+```
+
+```{r}
+#第七题
+train<- read.csv("C:/Users/pc/Desktop/Training.csv")
+#a. use appropriate descriptive statistics to summarize the training time data for each method. what similarities or differences do you observe from the sample data?
+library(kableExtra)
+skimr::skim(train) %>% 
+  kable() %>% 
+  kable_styling()
+str(train)
+summary(train)
+#这两种方法从统计上来看均值、中位数等数据都差异不大，二者没有明显区别
+
+#b. Comment on any difference between the population means for the two methods. Discuss your findings.
+t.test(train$Current,train$Proposed)
+# p-value = 0.5481，在0.05的显著性水平下，两种方法之间无显著差异。
+
+#c. compute the standard deviation and variance for each training method. conduct a hypothesis test about the equality of population variances for the two training methods. Discuss your findings.计算方差、标准差，并对总体方差进行假设检验
+var_current <- var(train$Current)
+sd_current <- sd(train$Current)
+var_proposed <- var(train$Proposed)
+sd_proposed <- sd(train$Proposed)
+var.test(train$Current,train$Proposed,conf.level = 0.95)
+#p-value = 0.000578,在0.05显著性水平下，两种方法的标准差或方差具有显著性差异
+
+#d. what conclusion can you reach about any differences between the two methods? what is your recommendation? explain.
+#更推荐提议的方法（Proposed）。这两种方法在平均数上没有显著差异，但提议的方法在方差和标准差上显著性更低。所以提议的方法不同基础的学生更有可能在大致相同的时间内完成学习。
+
+#e.can you suggest other data or testing that might be desirable before making a final decision on the training program to be used in the future?
+#目前的统计方法只是从时间上进行统计，得出了更推荐提议方法的结论。但学习效果是否也一样还有待检验，我认为还需要把使用两种不同方法学生的考试成绩也纳入考虑，对成绩也进行统计才能更好的反应两种方法哪种好。
+```
+
+```{r}
+#第八题
+carmy<- read.csv("C:/Users/pc/Desktop/Camry.csv")%>% 
+  rename(miles = `Miles..1000s.`,
+         price = `Price...1000s.`)
+
+#a. Develop a scatter diagram with the car mileage on the horizontal axis and the price on the vertical axis.
+library(ggplot2)
+ggplot(carmy,aes(miles,price))+
+  geom_point()
+
+#b. what does the scatter diagram developed in part (a) indicate about the relationship between the two variables?
+#根据散点图，凯美瑞汽车的里程和价格大致呈负相关，里程越长，价格越低。
+
+#c. Develop the estimated regression equation that could be used to predict the price ($1000s) given the miles (1000s).
+model_carmy<-lm(price ~ miles, data = carmy)
+summary(model_carmy)
+cat("价格 = ", coef(model_carmy)[1], " + ", coef(model_carmy)[2], "里程\n")
+#coef(model)用于提取模型的系数，即截距和斜率
+
+#d. Test for a significant relationship at the .05 level of significance.
+summary(model_carmy)
+#p-value: 0.0003475<0.05,是显著的
+
+#e. Did the estimated regression equation provide a good fit? Explain.
+#R-squared：0.5115，有51.15%，R平方值越接近1，表示模型拟合得越好
+
+plot(residuals(model_carmy), main = "Residual Plot")
+abline(h = 0, col = "red")# 绘制残差图
+#残差图随机分布在0周围，没有明显的模式（如曲线或系统性偏差）
+#根据R平方值和残差图，基本可得出结论：这个回归方程提供了良好的拟合
+
+#f. Provide an interpretation for the slope of the estimated regression equation.
+slope <- coef(model_carmy)[1]
+cat("回归方程的斜率是: ", slope, " (意味着每增加 1000英里, 价格将会下降", slope, " 美元).\n")
+
+#g. Suppose that you are considering purchasing a previously owned 2007 Camry that has been driven 60,000 miles. Using the estimated regression equation developed in part (c), predict the price for this car. Is this the price you would offer the seller.
+predicted_price <-16.46976-0.05877393*60
+predicted_price
+#预测价格为12.94美元，回归模型只有55%的准确率，并不能完全代表实际，在真实出价中还要考虑车的其他因素。
+
+```
+
+```{r}
+#第九题
+library(readxl)
+library(dplyr)
+we <- read_excel("C:/Users/pc/Desktop/WE.xlsx") %>%
+  rename(
+    id = `客户ID`,
+    loose = `流失`,
+    happy_index = `当月客户幸福指数`,
+    happy_index_var = `客户幸福指数相比上月变化`,
+    support = `当月客户支持`,
+    support_var = `客户支持相比上月的变化`,
+    service = `当月服务优先级`,
+    service_var = `服务优先级相比上月的变化`,
+    login = `当月登录次数`,
+    blog_var = `博客数相比上月的变化`,
+    vist_add = `访问次数相比上月的增加`,
+    age = `客户使用期限`,
+    gap = `访问间隔变化`
+  )
+
+#a. 通过可视化探索流失客户与非流失客户的行为特点（或特点对比），你能发现流失与非流失客户行为在哪些指标有可能存在显著不同？
+glimpse(we)
+summary_stats <- we %>%
+  group_by(loose) %>%
+  summarise(across(everything(), list(mean = mean, sd = sd, min = min, max = max)))
+library(ggplot2)
+ggplot(we, aes(x = loose, y = happy_index)) +
+  geom_boxplot() +
+  labs(title = "流失与非流失客户幸福指数比较", x = "流失状态", y = "客户幸福指数")# 箱线图：比较流失与非流失客户在各个指标上的差异
+# 直方图：查看单个指标的分布
+ggplot(we, aes(x =  happy_index, fill = loose)) +
+  geom_histogram(bins = 30, alpha = 0.7) +
+  labs(title = "客户幸福指数分布", x = "客户幸福指数", y = "频数")
+
+# 条形图：比较流失与非流失客户在分类指标上的比例
+ggplot(we, aes(x = loose, fill = loose)) +
+  geom_bar() +
+  labs(title = "流失与非流失客户比例", x = "流失状态", y = "比例")
+
+# 统计检验：t检验或卡方检验
+# 以客户幸福指数为例进行t检验
+t_test_result <- t.test( happy_index ~ loose, data = we)
+print(t_test_result)
+
+# 以服务优先级为例进行卡方检验
+chi_squared_result <- chisq.test(table(we$loose, we$service))
+print(chi_squared_result)
+#流失与非流失客户在客户幸福指数、客户支持次数、服务优先级、登录和活跃度、访问次数变化以及客户使用期限等指标上可能存在显著差异。
+
+
+#b. 通过均值比较的方式验证上述不同是否显著。
+non_loose <- we[we$loose == 0, ]
+loose <- we[we$loose == 1, ]
+指标 <- c("happy_index", "happy_index_var", "support", "support_var", "service", "service_var", "login", "blog_var", "vist_add", "age", "gap")
+# 进行t检验并输出结果
+t_test_results <- sapply(指标, function(x) {
+  # 确保列是数值型的
+  if(is.numeric(non_loose[[x]]) && is.numeric(loose[[x]])) {
+    t.test(non_loose[[x]], loose[[x]], var.equal = TRUE) # 假设方差相等
+  } else {
+    NULL # 如果不是数值型，返回NULL
+  }
+})
+print(t_test_results)
+#根据p.value的值，除客户支持相比上月的变化和服务优先级相比上月的变化外，其他变量均显著
+
+
+#c. 以”流失“为因变量，其他你认为重要的变量为自变量（提示：a、b两步的发现），建立回归方程对是否流失进行预测。
+we_model <- glm(loose ~ happy_index + happy_index_var + support + service + login
+              + blog_var + vist_add  + age + gap,
+             data = we,
+             family = binomial)
+summary(we_model)
+#当月客户幸福指数、客户幸福指数相比上月变化、访问间隔变化在0.001显著性水平上是显著的。访问次数相比上月的增加和客户使用期限在0.01显著性水平上是显著的。
+
+#d. 根据上一步预测的结果，对尚未流失（流失=0）的客户进行流失可能性排序，并给出流失可能性最大的前100名用户ID列表。
+non_loose <- we[we$loose == 0, ]
+# 计算流失可能性得分，这里我们使用客户幸福指数的下降作为指标
+non_loose$churn_score <- -non_loose$happy_index_var
+# 对非流失客户按流失可能性得分进行降序排序
+sorted_non_loose <- non_loose[order(non_loose$churn_score, decreasing = TRUE), ]
+# 提取流失可能性最大的前100名用户ID列表
+top_100 <- sorted_non_loose[1:100, c("id")]
+print(top_100)
+
+```
+
